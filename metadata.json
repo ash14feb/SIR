@@ -1,0 +1,8 @@
+{
+  "name": "Karnataka Voter Search",
+  "description": "Search engine interface for Karnataka voter details by name.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
