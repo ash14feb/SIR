@@ -12,8 +12,23 @@ interface SearchResponse {
   error?: string;
 }
 
+const constituencies = [
+  { value: 'A112', label: 'Bannur (A112)' },
+  { value: 'A113', label: 'T. Narasipur (A113)' },
+  { value: 'A114', label: 'Krishnaraja (A114)' },
+  { value: 'A115', label: 'Chamaraja (A115)' },
+  { value: 'A116', label: 'Narasimharaja (A116)' },
+  { value: 'A117', label: 'Chamundeshwari (A117)' },
+  { value: 'A118', label: 'Nanjangud (A118)' },
+  { value: 'A122', label: 'Heggadadevankote (A122)' },
+  { value: 'A123', label: 'Hunsur (A123)' },
+  { value: 'A124', label: 'Krishnarajanagara (A124)' },
+  { value: 'A125', label: 'Periyapatna (A125)' },
+];
+
 export default function App() {
   const [searchName, setSearchName] = useState('');
+  const [selectedAc, setSelectedAc] = useState('A117');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<SearchResponse | null>(null);
   const [error, setError] = useState('');
@@ -28,7 +43,7 @@ export default function App() {
     setError('');
     
     try {
-      const response = await fetch(`/api/search?name=${encodeURIComponent(searchName)}`);
+      const response = await fetch(`/api/search?name=${encodeURIComponent(searchName)}&ac=${encodeURIComponent(selectedAc)}`);
       const result: SearchResponse = await response.json();
       
       if (!response.ok) {
@@ -45,7 +60,8 @@ export default function App() {
     }
   };
 
-  const iframeUrl = `https://ceo.karnataka.gov.in/search/en?district=MYSORE&ac=A117&search=${encodeURIComponent(lastSearch || 'abdul bas')}`;
+  const iframeUrl = `https://ceo.karnataka.gov.in/search/en?district=MYSORE&ac=${encodeURIComponent(selectedAc)}&search=${encodeURIComponent(lastSearch || 'abdul bas')}`;
+  const selectedAcLabel = constituencies.find(c => c.value === selectedAc)?.label || 'Chamundeshwari (A117)';
 
   return (
     <div className="w-full h-full bg-slate-50 flex flex-col font-sans text-slate-900 overflow-hidden">
@@ -57,6 +73,20 @@ export default function App() {
             <p className="text-sm text-slate-500 mt-1">Electoral Search & Information Repository</p>
           </div>
           <form onSubmit={handleSearch} className="flex gap-3">
+            <div className="relative">
+              <select
+                value={selectedAc}
+                onChange={(e) => setSelectedAc(e.target.value)}
+                disabled={loading}
+                className="px-4 py-2 bg-slate-100 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-slate-700 cursor-pointer"
+              >
+                {constituencies.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="relative">
               <input
                 type="text"
@@ -80,7 +110,9 @@ export default function App() {
         <div className="flex justify-between items-center mt-4">
           <div className="flex gap-4">
             <div className="px-3 py-1 bg-blue-50 border border-blue-100 rounded text-xs font-medium text-blue-700">District: MYSORE</div>
-            <div className="px-3 py-1 bg-slate-100 border border-slate-200 rounded text-xs font-medium text-slate-600">AC: A117 (CHAMUNDESHWARI)</div>
+            <div className="px-3 py-1 bg-slate-100 border border-slate-200 rounded text-xs font-medium text-slate-600">
+              AC: {selectedAcLabel.toUpperCase()}
+            </div>
           </div>
 
           {/* Navigation Tabs */}

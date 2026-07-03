@@ -9,6 +9,7 @@ async function startServer() {
 
   app.get('/api/search', async (req, res) => {
     const name = req.query.name as string;
+    const ac = (req.query.ac as string) || 'A117';
     
     if (!name || name.trim() === '') {
       return res.status(400).json({ error: 'Name parameter is required' });
@@ -16,10 +17,10 @@ async function startServer() {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-      // Hardcoded district and ac as per the requested scope, keeping only name dynamic
-      const url = `https://ceo.karnataka.gov.in/search/en?district=MYSORE&ac=A117&search=${encodeURIComponent(name)}`;
+      // Dynamic ac as selected by the user, and dynamic name search
+      const url = `https://ceo.karnataka.gov.in/search/en?district=MYSORE&ac=${encodeURIComponent(ac)}&search=${encodeURIComponent(name)}`;
       
       let html = '';
 
@@ -39,7 +40,15 @@ async function startServer() {
       } catch (fetchError: any) {
         clearTimeout(timeoutId);
         console.error('Real API failed', fetchError);
-        return res.status(500).json({ error: `Could not reach the Karnataka CEO server (connection timed out). The server is likely blocking access from our cloud infrastructure.` });
+        
+        let errorMessage = 'Could not reach the Karnataka CEO server (connection timed out).';
+        if (fetchError.name === 'AbortError') {
+          errorMessage = 'The request to the Karnataka CEO server timed out after 15 seconds.';
+        }
+        
+        return res.status(502).json({ 
+          error: `${errorMessage} Government firewalls and CDNs (such as those protecting ceo.karnataka.gov.in) frequently block requests originating from public cloud providers like Google Cloud Run, AWS, or Azure to prevent automated scraping. Since this applet is hosted on Google Cloud Run, the outbound request is being blocked. Testing this server code on your local machine will work perfectly because it will use your local network IP (just like Postman).` 
+        });
       }
 
       const $ = cheerio.load(html);
