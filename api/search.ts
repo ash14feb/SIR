@@ -16,6 +16,7 @@ export default async function handler(req: any, res: any) {
 
   const name = req.query.name as string;
   const ac = (req.query.ac as string) || 'A117';
+  const lang = (req.query.lang as string) === 'ka' ? 'ka' : 'en';
   
   if (!name || name.trim() === '') {
     return res.status(400).json({ error: 'Name parameter is required' });
@@ -25,7 +26,8 @@ export default async function handler(req: any, res: any) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-    const url = `https://ceo.karnataka.gov.in/search/en?district=MYSORE&ac=${encodeURIComponent(ac)}&search=${encodeURIComponent(name)}`;
+    const district = lang === 'ka' ? 'ಮೈಸೂರು' : 'MYSORE';
+    const url = `https://ceo.karnataka.gov.in/search/${lang}?district=${encodeURIComponent(district)}&ac=${encodeURIComponent(ac)}&search=${encodeURIComponent(name)}`;
     
     let html = '';
 
